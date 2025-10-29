@@ -1,14 +1,42 @@
+import { cadastroUsuario } from "@/services/user";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 
+
 export default function CadastroScreen() {
   const router = useRouter();
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleCadastro = () => {
+    const newUser = {
+      nome,
+      email,
+      password,
+    };
+    if(!nome || !email || !password){
+      alert("Por favor, preencha todos os campos.");
+      return;
+    }
+    try {
+      cadastroUsuario(newUser)
+        .then(() => {
+          alert("Cadastro realizado com sucesso!");
+          router.push("/");
+        })
+        .catch((error) => {
+          console.error("Erro no cadastro:", error);
+          alert("Erro ao cadastrar. Verifique seus dados e tente novamente.");
+        });
+    } catch (error) {
+      console.error("Erro inesperado no cadastro:", error);
+      alert("Erro inesperado ao cadastrar. Tente novamente mais tarde.");
+    }
+  }
 
   return (
     <KeyboardAvoidingView
@@ -60,8 +88,8 @@ export default function CadastroScreen() {
               placeholder="••••••••"
               placeholderTextColor="#9ca3af"
               secureTextEntry={!showPassword}
-              value={senha}
-              onChangeText={setSenha}
+              value={password}
+              onChangeText={setPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
               <Ionicons
@@ -76,7 +104,7 @@ export default function CadastroScreen() {
         {/* Botão de Cadastro */}
         <TouchableOpacity
           className="bg-primary py-3.5 rounded-xl mb-4 shadow-md shadow-primary/30"
-          onPress={() => router.push("/home")}
+          onPress={handleCadastro}
           activeOpacity={0.8}
         >
           <Text className="text-white text-center font-bold text-lg">Cadastrar</Text>

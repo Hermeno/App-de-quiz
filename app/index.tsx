@@ -1,5 +1,7 @@
+import { loginUsuario } from "@/services/user";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
 import { KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 
@@ -8,6 +10,30 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      alert("Por favor, preencha todos os campos.");
+      return;
+    }
+
+    try {
+      const data = await loginUsuario({ email, password });
+      if (data && data.token) {
+        await SecureStore.setItemAsync("token", data.token);
+        if (data.nome) {
+          await SecureStore.setItemAsync("nome", data.nome);
+        }
+        router.push("/home");
+      } else {
+        alert("Falha no login: token não recebido.");
+      }
+    } catch (error) {
+      console.error("Erro no login:", error);
+      alert("Falha no login. Verifique suas credenciais.");
+    }
+  };
+
 
   return (
     <KeyboardAvoidingView
@@ -58,7 +84,7 @@ export default function LoginScreen() {
       {/* Button */}
       <TouchableOpacity
         className="bg-primary py-3.5 rounded-xl mb-4 shadow-md shadow-primary/30"
-        onPress={() => router.push("/home")}
+        onPress={handleLogin}
         activeOpacity={0.8}
       >
         <Text className="text-white text-center font-bold text-lg">Entrar</Text>
