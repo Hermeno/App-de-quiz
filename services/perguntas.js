@@ -1,5 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import  api  from './api'; // api.js terá a configuração do axios com baseURL
+import  api  from './api'; 
 
 
 
@@ -64,13 +64,19 @@ export const obterPerguntaPorId = async (id) => {
 // listarperguntas por exameId
 export const listarPerguntasPorExame = async (exameId) => {
     try {
+        const token = await getAuthToken();
+        if (!token) throw new Error("Token não encontrado");
+
+        console.log('Fazendo requisição para exame:', exameId, 'com token:', token.substring(0, 10) + '...');
+        
         const response = await api.get(`/perguntas/exame/${exameId}`, {
-            Headers: {
-                Authorization: `Bearer ${await getAuthToken()}`,
+            headers: {
+                Authorization: `Bearer ${token}`
             }
         });
         return response.data;
     } catch (error) {
+        console.error("Erro detalhado ao listar perguntas:", error.response?.data || error.message);
         throw error;
     }
 }
@@ -92,3 +98,17 @@ export const editarPergunta = async (id, { texto, opcoes, respostaCorreta }) => 
         throw error;
     }
 }
+
+
+export const deletarPergunta = async (id) => {
+    try {
+        const response = await api.delete(`/perguntas/${id}`, {
+            Headers: {
+                Authorization: `Bearer ${await getAuthToken()}`,
+            }
+        });
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}   

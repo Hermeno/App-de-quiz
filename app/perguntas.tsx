@@ -1,61 +1,127 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { listarPerguntasPorExame } from "@/services/perguntas";
+import { salvarResposta } from "@/services/respostas";
 
 export default function PerguntasScreen() {
+  // const params = useLocalSearchParams();
   const router = useRouter();
+  const { id, tentativaId } = useLocalSearchParams<{ id: string; tentativaId?: string }>();
+ console.log('id recebido:', id);
+ console.log('tentativaId recebido:', tentativaId);
 
-  // Exemplo de perguntas — depois você pode carregar do banco de dados
-  const perguntas = [
-    {
-      id: 1,
-      pergunta: "Qual linguagem é usada para desenvolver apps em React Native?",
-      opcoes: ["Python", "C++", "JavaScript", "Ruby"],
-      correta: "JavaScript",
-    },
-    {
-      id: 2,
-      pergunta: "O que significa a sigla UX?",
-      opcoes: ["User Xperience", "User Experience", "Unique XML", "Ultra Exchange"],
-      correta: "User Experience",
-    },
-    {
-      id: 3,
-      pergunta: "O React Native foi criado por qual empresa?",
-      opcoes: ["Google", "Microsoft", "Facebook", "Amazon"],
-      correta: "Facebook",
-    },
-  ];
-
+  const [perguntas, setPerguntas] = useState<any[]>([]);
   const [indice, setIndice] = useState(0);
-  const [selecionada, setSelecionada] = useState<string | null>(null);
-  const [pontuacao, setPontuacao] = useState(0);
+  const [selecionadas, setSelecionadas] = useState<Record<number, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // --- Timer: 60 minutos (em segundos)
+  const [tempoRestante, setTempoRestante] = useState(60 * 60); // 3600 segundos
+
+  // Formata mm:ss
+  const formatarTempo = (segundos: number) => {
+    const minutos = Math.floor(segundos / 60);
+    const seg = segundos % 60;
+    return `${String(minutos).padStart(2, "0")}:${String(seg).padStart(2, "0")}`;
+  };
+  // --- fim Timer
 
   const perguntaAtual = perguntas[indice];
-  const progresso = ((indice + 1) / perguntas.length) * 100;
+  const eUltima = indice === perguntas.length - 1;
 
-  const handleResponder = (opcao: string) => {
-    setSelecionada(opcao);
-    if (opcao === perguntaAtual.correta) {
-      setPontuacao(pontuacao + 1);
-    }
+  useEffect(() => {
+    const carregarPerguntas = async () => {
+      if (!id) {
+        setError("ID do exame inválido");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await listarPerguntasPorExame(id);
+        setPerguntas(data);
+        setError(null);
+      } catch (error) {
+        console.error("Erro ao carregar perguntas:", error);
+        setError("Erro ao carregar perguntas. Tente novamente.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    carregarPerguntas();
+  }, [id]);
+
+  // Timer de 60 minutos (segundo efeito: só roda uma vez)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTempoRestante((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // chama handleFinalizar quando o tempo terminar
+          // usamos setTimeout 0 para garantir que o fluxo atual de renderização termine antes de executar a finalização
+          setTimeout(() => {
+            handleFinalizar();
+          }, 0);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSelecionarOpcao = (opcao: string) => {
+    setSelecionadas({ ...selecionadas, [perguntaAtual.id]: opcao });
   };
 
   const handleProxima = () => {
-    if (indice < perguntas.length - 1) {
-      setIndice(indice + 1);
-      setSelecionada(null);
-    } else {
-      router.push({
+    setIndice(indice + 1);
+  };
+
+  const handleFinalizar = async () => {
+    try {
+      // Salvar todas respostas de uma vez
+      for (const pergunta of perguntas) {
+        const resposta = selecionadas[pergunta.id];
+        if (resposta) {
+          await salvarResposta(pergunta.id, resposta, tentativaId); 
+        }
+      }
+
+      // Navegar para resultado
+      router.replace({
         pathname: "/resultado",
-        params: { pontuacao, total: perguntas.length },
+        params: { id: id, tentativaId: tentativaId },
       });
+    } catch (error) {
+      console.error("Erro ao salvar respostas:", error);
     }
   };
 
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-background-light">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!perguntaAtual) {
+    return (
+      <View className="flex-1 justify-center items-center bg-background-light px-6">
+        <Text className="text-lg text-text-light">Nenhuma pergunta disponível.</Text>
+      </View>
+    );
+  }
+
   return (
-    <View className="flex-1 bg-background-light px-6 py-10">
+    <ScrollView className="flex-1 bg-background-light px-6 py-10">
       {/* Header */}
       <View className="flex-row justify-between items-center mb-6">
         <Text className="text-lg font-semibold text-text-light">
@@ -66,12 +132,11 @@ export default function PerguntasScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Barra de Progresso */}
-      <View className="w-full h-3 bg-subtle-light rounded-full mb-8">
-        <View
-          className="h-3 bg-primary rounded-full"
-          style={{ width: `${progresso}%` }}
-        />
+      {/* Timer */}
+      <View className="mb-6 p-4 bg-white rounded-xl border border-gray-200 shadow-sm items-center">
+        <Text className="text-lg font-bold text-red-500">
+          Tempo restante: {formatarTempo(tempoRestante)}
+        </Text>
       </View>
 
       {/* Pergunta */}
@@ -80,52 +145,43 @@ export default function PerguntasScreen() {
       </Text>
 
       {/* Opções */}
-      {perguntaAtual.opcoes.map((opcao, index) => {
-        const isSelected = selecionada === opcao;
-        const isCorrect = perguntaAtual.correta === opcao;
-        const bgColor =
-          selecionada && isSelected
-            ? isCorrect
-              ? "bg-success"
-              : "bg-red-400"
-            : "bg-white";
+      {["opcaoA", "opcaoB", "opcaoC", "opcaoD", "opcaoE"].map((opcao) => {
+        if (!perguntaAtual[opcao]) return null;
 
-        const borderColor = isSelected
-          ? isCorrect
-            ? "#10b981"
-            : "#f87171"
-          : "#e5e7eb";
+        const isSelected = selecionadas[perguntaAtual.id] === opcao;
 
         return (
           <TouchableOpacity
-            key={index}
+            key={opcao}
             activeOpacity={0.9}
-            onPress={() => !selecionada && handleResponder(opcao)}
-            className={`w-full py-4 px-4 mb-4 rounded-xl border ${bgColor}`}
-            style={{ borderColor }}
+            onPress={() => handleSelecionarOpcao(opcao)}
+            className={`w-full py-4 px-4 mb-4 rounded-xl border ${
+              isSelected ? "bg-gray-200" : "bg-white"
+            }`}
+            style={{ borderColor: isSelected ? "#6b7280" : "#e5e7eb" }}
           >
             <Text
               className={`text-base ${
-                isSelected ? "text-white font-semibold" : "text-text-light"
+                isSelected ? "text-gray-900 font-semibold" : "text-text-light"
               }`}
             >
-              {opcao}
+              {perguntaAtual[opcao]}
             </Text>
           </TouchableOpacity>
         );
       })}
 
-      {/* Botão Próxima */}
-      {selecionada && (
+      {/* Botão Próxima ou Finalizar */}
+      {selecionadas[perguntaAtual.id] && (
         <TouchableOpacity
-          className="bg-primary py-4 rounded-2xl shadow-md shadow-primary/30 mt-4"
-          onPress={handleProxima}
+          className="bg-blue-600 py-4 rounded-2xl shadow-md shadow-primary/30 mt-4"
+          onPress={eUltima ? handleFinalizar : handleProxima}
         >
           <Text className="text-white text-center text-lg font-bold">
-            {indice < perguntas.length - 1 ? "Próxima Pergunta" : "Ver Resultado"}
+            {eUltima ? "Finalizar exame" : "Próxima"}
           </Text>
         </TouchableOpacity>
       )}
-    </View>
+    </ScrollView>
   );
 }

@@ -16,6 +16,7 @@ export default function ExamesScreen() {
   const [numeroPerguntas, setNumeroPerguntas] = useState("");
   const [estado, setEstado] = useState("ativo");
   const [criadorId, setCriadorId] = useState(1);
+  const [foto, setFoto] = useState(null);
 
   useEffect(() => {
     loadExames();
@@ -75,7 +76,7 @@ export default function ExamesScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => router.push(`/PerguntasScreen?Id=${item.id}`)}
+            onPress={() => router.push(`/addquezes?Id=${item.id}`)}
             className="bg-white p-4 mb-3 rounded-2xl shadow m-2"
           >
             <Text className="text-lg font-semibold text-text-light">
@@ -133,6 +134,12 @@ export default function ExamesScreen() {
               keyboardType="numeric"
               onChangeText={setNumeroPerguntas}
             />
+
+            {/* upload foto */}
+
+            
+             
+
 
             <View className="flex-row justify-end mt-4">
               <Pressable

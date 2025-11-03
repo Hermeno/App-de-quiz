@@ -46,7 +46,6 @@ export const listarExames = async () => {
                 Authorization: `Bearer ${await getAuthToken()}`,
             }
         });
-        console.log("Resposta dos exames:", response.data);
         return response.data;
     } catch (error) {
         throw error;

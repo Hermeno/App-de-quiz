@@ -42,7 +42,7 @@ export default function HomeScreen() {
         <TouchableOpacity onPress={() => router.push("/perfil")}>
           <Ionicons name="person-circle-outline" size={28} color="#1f2937" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push("/ExamesScreen")}>
+        <TouchableOpacity onPress={() => router.push("/exame")}>
           <Ionicons name="home" size={28} color="#1f2937" />
         </TouchableOpacity>
       </View>
@@ -62,7 +62,7 @@ export default function HomeScreen() {
             <TouchableOpacity
               key={exame.id}
               className="w-[48%] bg-white rounded-2xl p-3 mb-4 shadow-md shadow-gray-200"
-              onPress={() => router.push(`/perguntas?id=${exame.id}`)}
+              onPress={() => router.push({ pathname: "/iniciar", params: { id: exame.id } })}
             >
               {/* Imagem temporária (depois pode mudar) */}
               <Image

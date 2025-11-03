@@ -54,6 +54,16 @@ export default function PerguntasScreen() {
       await cadastrarPergunta({ pergunta, tipo, opcaoA, opcaoB, opcaoC, opcaoD, correta, exameId, // Inclui o exameId no cadastro
       });
       alert("Pergunta cadastrada com sucesso!");
+      // Limpa os campos após o cadastro
+      setPergunta("");
+      setTipo("texto");
+      setOpcaoA("");
+      setOpcaoB("");
+      setOpcaoC("");
+      setOpcaoD("");
+      setCorreta("A");
+      // Recarrega a lista de perguntas
+      loadPerguntas();
       setModalVisible(false);
     } catch (error) {
       console.error("Erro ao cadastrar pergunta:", error);
