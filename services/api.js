@@ -2,7 +2,8 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
 const api = axios.create({
-  baseURL: "http://192.168.43.184:3000", // usa o IP da tua máquina
+  baseURL: "https://app-quizz-backend-nodes-express-and.onrender.com",
+  // baseURL: "http://192.168.43.184:3000", // usa o IP da tua máquina
   timeout: 10000,
 });
 

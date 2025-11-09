@@ -67,8 +67,7 @@ export const listarRespostas = async () => {
 export default {
   salvarResposta,
   listarRespostasPorUsuario,
-  listarRespostas,
-  buscarMedia,
+  listarRespostas
 };
 
 

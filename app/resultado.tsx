@@ -5,8 +5,8 @@ import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "rea
 import { buscarMedia, totalCorrectas, totalErradas } from "@/services/media";
 
 export default function ResultadoScreen() {
-  const { id, tentativaId } = useLocalSearchParams();
-
+  const { id, tentativaId } = useLocalSearchParams(); 
+ 
   console.log('id recebido no resultado:', id);
   const router = useRouter();
   const [resultado, setResultado] = useState<{ totalRespostas: number; corretas: number; media: number } | null>(null);

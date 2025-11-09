@@ -1,9 +1,9 @@
-import { loginUsuario } from "@/services/user";
+import { loginUsuario } from "@/services/auth";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function LoginScreen() {
         if (data.nome) {
           await SecureStore.setItemAsync("nome", data.nome);
         }
-        router.push("/home");
+        router.replace("/home");
       } else {
         alert("Falha no login: token não recebido.");
       }
@@ -42,7 +42,11 @@ export default function LoginScreen() {
     >
       {/* Header */}
       <View className="items-center mb-12">
-        <Text className="text-4xl font-bold text-primary mb-2">AprovAqui</Text>
+        <Image
+          source={require("../assets/images/ccc.png")}
+          className="w-48 h-48 mb-2"
+          resizeMode="contain"
+        />
         <Text className="text-text-light text-base opacity-70">Bem-vindo de volta 👋</Text>
       </View>
 

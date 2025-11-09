@@ -1,4 +1,4 @@
-import { cadastroUsuario } from "@/services/user";
+import { cadastroUsuario } from "@/services/auth";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";

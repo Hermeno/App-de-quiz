@@ -1,53 +1,6 @@
 import api from './api'; // api.js terá a configuração do axios com baseURL
 import * as SecureStore from 'expo-secure-store';
 
-export const  cadastroUsuario = async ({ nome, email, password }) => {
-    try {
-        const response = await api.post('/auth/register', {
-            nome: nome,
-            email: email,
-            senha: password,
-        });
-        console.log('Resposta do cadastro:', response.data);
-        return response;
-    } catch (error) {
-        throw error;
-    }
-};
-
-
-export const loginUsuario = async ({ email, password }) => {
-    try {
-        const response = await api.post('/auth/login', {
-            email: email,
-            senha: password,
-        });
-
-        if (response.status === 200) {
-            const { token, usuario } = response.data;
-
-            try {
-                await SecureStore.setItemAsync('token', token);
-                await SecureStore.setItemAsync('nome', usuario?.nome || "");
-                await SecureStore.setItemAsync('email', usuario?.email || "");
-                await SecureStore.setItemAsync('usuarioId', usuario?.id.toString() || "");
-                await SecureStore.setItemAsync('tipo', usuario?.tipo || "");
-                await SecureStore.setItemAsync('avatar', usuario?.avatar || "");
-
-                console.log("Dados do usuário salvos:", usuario);
-            } catch (storeErr) {
-                console.error('Erro ao salvar dados no SecureStore:', storeErr);
-            }
-
-            return response.data;
-        } else {
-            throw new Error('Falha no login');
-        }
-    } catch (error) {
-        console.error('Erro no login:', error);
-        throw error;
-    }
-};
 
 // profile 
 export const obterPerfilUsuario = async (token) => {

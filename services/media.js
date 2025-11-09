@@ -71,9 +71,8 @@ export const totalErradas = async (exameId, tentativaId) => {
 
 
 export default {
-  salvarResposta,
-  listarRespostasPorUsuario,
-  listarRespostas,
+  totalCorrectas,
+  totalErradas,
   buscarMedia,
 };
 

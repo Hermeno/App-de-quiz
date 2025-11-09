@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { listarPerguntasPorExame } from "@/services/perguntas";
 import { salvarResposta } from "@/services/respostas";
+import { WebView } from 'react-native-webview';
 
 export default function PerguntasScreen() {
   // const params = useLocalSearchParams();
@@ -140,9 +141,39 @@ export default function PerguntasScreen() {
       </View>
 
       {/* Pergunta */}
-      <Text className="text-xl font-bold text-text-light mb-8">
+      {/* <Text className="text-xl font-bold text-text-light mb-8">
         {perguntaAtual.pergunta}
-      </Text>
+      </Text> */}
+
+
+
+
+{/* Pergunta */}
+    <View style={{ height: 100, marginBottom: 16 }}>
+      <WebView
+        originWhitelist={['*']}
+        source={{
+          html: `
+            <html>
+              <head>
+                <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+              </head>
+              <body>
+                <p style="font-size:50px;">\\(${perguntaAtual.pergunta}\\)</p>
+              </body>
+            </html>
+          `,
+        }}
+        style={{ flex: 1, backgroundColor: 'transparent' }}
+        scrollEnabled={false}
+      />
+    </View>
+
+
+
+
+
+
 
       {/* Opções */}
       {["opcaoA", "opcaoB", "opcaoC", "opcaoD", "opcaoE"].map((opcao) => {
